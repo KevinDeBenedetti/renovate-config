@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Deny-all default: each job grants only the permissions it needs.
+permissions: {}
+
+jobs:
+  # Re-runs prek.toml server-side: a pull request that breaks default.json fails
+  # here, before it is merged into main, where every repository that extends
+  # the preset reads it.
+  prek:
+    name: prek
+    # Pinned to a github-workflows release by full commit SHA, never @main: a
+    # change there reaches this repository only when the pin moves.
+    uses: KevinDeBenedetti/github-workflows/.github/workflows/ci-prek.yml@91e0486cf281ba5b353daff772ac04622392b45d # v0.56.0
+    permissions:
+      contents: read
