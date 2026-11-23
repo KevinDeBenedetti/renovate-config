@@ -56,7 +56,8 @@ npx --yes --package renovate -- renovate-config-validator --strict
 
 ## Caveats
 
-- **Schedule.** Pull requests open only inside the window, security fixes aside: a self-hosted run has to start there, or it opens no update until the next Monday.
+- **Schedule.** Pull requests open only inside the window, security fixes aside: a self-hosted run has to start there, or it opens no update until the next Monday. The [Mend Renovate app](https://docs.renovatebot.com/mend-hosted/job-scheduling/) picks its own times: every 4 hours at best, daily until a Renovate pull request is merged, so a 6-hour window can pass with no run. With the app, widen the window to the whole day, lock file maintenance included: `"schedule": ["* * * * 1"]` and `"lockFileMaintenance": { "schedule": ["* * * * 1"] }`.
+- **Cargo.** `config:best-practices` pins dev-dependencies, Cargo's too: `serde_json = "1"` would become `=1.0.x` while every other crate keeps its range. A Rust repository adds a rule with `"matchManagers": ["cargo"]` and `"rangeStrategy": "update-lockfile"` to move `Cargo.lock` only.
 - **Release dates.** The soak needs a release timestamp, and Docker images get one from Docker Hub only: an image from another registry never passes it unless a rule sets `minimumReleaseAgeBehaviour` to `timestamp-optional`, as above.
 - **prek.** A `rev` is updated only with the comment on the line above it: `# renovate: datasource=github-tags depName=<owner>/<repo>`, any datasource, with optional `packageName=`, `versioning=` and `extractVersion=`.
 - **Examples.** `config:best-practices` ignores `**/examples/**`: set your own `ignorePaths` to update the pins there.
