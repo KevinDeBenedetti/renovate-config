@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Base preset for every KevinDeBenedetti repository: Renovate's best practices, one Monday-morning window in Europe/Paris, a 3-day soak on every release, and the conventions shared by all repositories (prek.toml pins, github-workflows pins left to its release job, labels, data-owning images gated). Extend it with `github>KevinDeBenedetti/renovate-config` and keep only the repository's own rules next to it.",
+  "description": "Shared base preset: Renovate's best practices, one Monday-morning window in Europe/Paris, a 3-day soak on every release, prek.toml hook revs, labels by kind, and majors of data-owning images held for approval. Extend it with `github>KevinDeBenedetti/renovate-config` and keep only the repository's own rules next to it.",
   "extends": [
     "config:best-practices",
     ":separateMultipleMajorReleases",
@@ -36,7 +36,8 @@
       "minimumReleaseAge": null
     },
     {
-      "description": "github-workflows pins (workflows, prek.toml) move with each of its releases: its propagate-release job opens that pull request, so Renovate would only duplicate it, and would re-pin it.",
+      "description": "KevinDeBenedetti repositories only: their KevinDeBenedetti/github-workflows pins (workflows, prek.toml) move with each of its releases, through the pull request its propagate-release job opens, so Renovate would only duplicate it, and would re-pin it. Any other repository that extends this preset gets Renovate's updates of those pins as usual.",
+      "matchRepositories": ["KevinDeBenedetti/*"],
       "matchPackageNames": ["KevinDeBenedetti/github-workflows", "KevinDeBenedetti/github-workflows/**"],
       "enabled": false
     },
@@ -52,7 +53,7 @@
       "addLabels": ["prek"]
     },
     {
-      "description": "A major gets its own label so it stands out in the PR list and the notifications: two majors merged as routine bumps had to be reverted in infra (Postgres 18, community.general 14, 2026-11-08).",
+      "description": "A major gets its own label so it stands out in the PR list and the notifications, instead of being merged as a routine bump.",
       "matchUpdateTypes": ["major"],
       "addLabels": ["major"]
     },
