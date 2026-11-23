@@ -1,0 +1,88 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "Base preset for every KevinDeBenedetti repository: Renovate's best practices, one Monday-morning window in Europe/Paris, a 3-day soak on every release, and the conventions shared by all repositories (prek.toml pins, github-workflows pins left to its release job, labels, data-owning images gated). Extend it with `github>KevinDeBenedetti/renovate-config` and keep only the repository's own rules next to it.",
+  "extends": [
+    "config:best-practices",
+    ":separateMultipleMajorReleases",
+    ":timezone(Europe/Paris)"
+  ],
+  "schedule": ["* 0-5 * * 1"],
+  "labels": ["dependencies"],
+  "osvVulnerabilityAlerts": true,
+  "vulnerabilityAlerts": {
+    "description": "Security fixes skip the schedule and the minimum release age (Renovate's own behaviour), and stand out in the PR list.",
+    "addLabels": ["security"]
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "prek hook revs. Renovate has no prek manager (the pre-commit one reads .pre-commit-config.yaml only), so each `rev = \"…\"` in prek.toml carries a `# renovate: datasource=<datasource> depName=<depName>` comment on the line above. Also matches a prek.toml outside the root (examples/prek.toml).",
+      "managerFilePatterns": ["/(^|/)prek\\.toml$/"],
+      "matchStrings": [
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)(?:\\s+packageName=(?<packageName>\\S+))?(?:\\s+versioning=(?<versioning>\\S+))?(?:\\s+extractVersion=(?<extractVersion>\\S+))?\\s*\\n\\s*rev\\s*=\\s*\"(?<currentValue>[^\"]+)\""
+      ]
+    }
+  ],
+  "packageRules": [
+    {
+      "description": "Soak every release for 3 days before proposing it, whatever the ecosystem (config:best-practices only does it for npm): a release pulled within days (broken, or a compromised publish) never reaches a PR. internalChecksFilter is `strict` by default, so no PR opens until a version is old enough; pending ones show on the Dependency Dashboard. Security updates do not wait.",
+      "matchPackageNames": ["*"],
+      "minimumReleaseAge": "3 days"
+    },
+    {
+      "description": "Update types that carry no release timestamp of their own: with the default minimumReleaseAgeBehaviour (timestamp-required) the soak above would hold them forever. Same exceptions as Renovate's security:minimumReleaseAge* presets, for every datasource.",
+      "matchUpdateTypes": ["lockFileMaintenance", "pin", "pinDigest", "replacement", "bump", "lockfileUpdate", "rollback"],
+      "minimumReleaseAge": null
+    },
+    {
+      "description": "github-workflows pins (workflows, prek.toml) move with each of its releases: its propagate-release job opens that pull request, so Renovate would only duplicate it, and would re-pin it.",
+      "matchPackageNames": ["KevinDeBenedetti/github-workflows", "KevinDeBenedetti/github-workflows/**"],
+      "enabled": false
+    },
+    {
+      "description": "GitHub Actions bumps are CI changes: `ci(deps)` rather than `chore(deps)`, so they stay out of the release notes.",
+      "matchManagers": ["github-actions"],
+      "semanticCommitType": "ci",
+      "addLabels": ["github-actions"]
+    },
+    {
+      "description": "prek hook bumps are tooling: `chore(deps)` and their own label.",
+      "matchFileNames": ["**/prek.toml"],
+      "addLabels": ["prek"]
+    },
+    {
+      "description": "A major gets its own label so it stands out in the PR list and the notifications: two majors merged as routine bumps had to be reverted in infra (Postgres 18, community.general 14, 2026-11-08).",
+      "matchUpdateTypes": ["major"],
+      "addLabels": ["major"]
+    },
+    {
+      "description": "A major of an image that owns data is a migration, not a bump: no PR until it is approved on the Dependency Dashboard, and never automerged. Minors, patches and digests flow as usual.",
+      "matchDatasources": ["docker"],
+      "matchPackageNames": [
+        "postgres",
+        "**/postgres",
+        "redis",
+        "**/redis",
+        "valkey/valkey",
+        "**/valkey",
+        "mariadb",
+        "**/mariadb",
+        "mysql",
+        "**/mysql",
+        "mongo",
+        "**/mongo",
+        "qdrant/qdrant",
+        "**/qdrant",
+        "chrislusf/seaweedfs",
+        "minio/minio"
+      ],
+      "matchUpdateTypes": ["major"],
+      "dependencyDashboardApproval": true,
+      "automerge": false,
+      "addLabels": ["data-migration"],
+      "prBodyNotes": [
+        "⚠️ This image owns data. A new major may refuse the files the current one wrote: read its upgrade notes, plan the migration (dump and restore, or the project's own upgrade path) and take a backup first. Merging alone can take the database down."
+      ]
+    }
+  ]
+}
