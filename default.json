@@ -17,10 +17,11 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "prek hook revs. Renovate has no prek manager (the pre-commit one reads .pre-commit-config.yaml only), so each `rev = \"…\"` in prek.toml carries a `# renovate: datasource=<datasource> depName=<depName>` comment on the line above. Any prek.toml outside ignorePaths: config:best-practices ignores `**/examples/**`, so a repository that wants examples/prek.toml read sets its own ignorePaths.",
+      "description": "prek hook revs. Renovate has no prek manager (the pre-commit one reads .pre-commit-config.yaml only), so each `rev = \"…\"` in prek.toml carries a `# renovate: datasource=<datasource> depName=<depName>` comment on the line above. Two forms: a tag (`rev = \"v1.2.3\"`), or a commit frozen to its tag (`rev = \"<40-hex sha>\"  # frozen: v1.2.3`, what `prek update --freeze` writes), whose commit and comment move together. The tag form needs a non-hex character, so a frozen commit is never read as a tag. Any prek.toml outside ignorePaths: config:best-practices ignores `**/examples/**`, so a repository that wants examples/prek.toml read sets its own ignorePaths.",
       "managerFilePatterns": ["/(^|/)prek\\.toml$/"],
       "matchStrings": [
-        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)(?:\\s+packageName=(?<packageName>\\S+))?(?:\\s+versioning=(?<versioning>\\S+))?(?:\\s+extractVersion=(?<extractVersion>\\S+))?\\s*\\n\\s*rev\\s*=\\s*\"(?<currentValue>[^\"]+)\""
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)(?:\\s+packageName=(?<packageName>\\S+))?(?:\\s+versioning=(?<versioning>\\S+))?(?:\\s+extractVersion=(?<extractVersion>\\S+))?\\s*\\n\\s*rev\\s*=\\s*\"(?<currentValue>[^\"]*[^\"0-9a-f][^\"]*)\"",
+        "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)(?:\\s+packageName=(?<packageName>\\S+))?(?:\\s+versioning=(?<versioning>\\S+))?(?:\\s+extractVersion=(?<extractVersion>\\S+))?\\s*\\n\\s*rev\\s*=\\s*\"(?<currentDigest>[0-9a-f]{40})\"[ \\t]*#[ \\t]*frozen:[ \\t]*(?<currentValue>\\S+)"
       ]
     }
   ],
