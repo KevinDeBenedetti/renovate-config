@@ -7,6 +7,7 @@
     ":timezone(Europe/Paris)"
   ],
   "schedule": ["* 0-5 * * 1"],
+  "prHourlyLimit": 0,
   "labels": ["dependencies"],
   "osvVulnerabilityAlerts": true,
   "vulnerabilityAlerts": {
@@ -16,7 +17,7 @@
   "customManagers": [
     {
       "customType": "regex",
-      "description": "prek hook revs. Renovate has no prek manager (the pre-commit one reads .pre-commit-config.yaml only), so each `rev = \"…\"` in prek.toml carries a `# renovate: datasource=<datasource> depName=<depName>` comment on the line above. Also matches a prek.toml outside the root (examples/prek.toml).",
+      "description": "prek hook revs. Renovate has no prek manager (the pre-commit one reads .pre-commit-config.yaml only), so each `rev = \"…\"` in prek.toml carries a `# renovate: datasource=<datasource> depName=<depName>` comment on the line above. Any prek.toml outside ignorePaths: config:best-practices ignores `**/examples/**`, so a repository that wants examples/prek.toml read sets its own ignorePaths.",
       "managerFilePatterns": ["/(^|/)prek\\.toml$/"],
       "matchStrings": [
         "#\\s*renovate:\\s*datasource=(?<datasource>\\S+)\\s+depName=(?<depName>\\S+)(?:\\s+packageName=(?<packageName>\\S+))?(?:\\s+versioning=(?<versioning>\\S+))?(?:\\s+extractVersion=(?<extractVersion>\\S+))?\\s*\\n\\s*rev\\s*=\\s*\"(?<currentValue>[^\"]+)\""
