@@ -1,0 +1,89 @@
+name: Renovate
+
+# The one Renovate run for every KevinDeBenedetti repository: it autodiscovers
+# the repositories the release GitHub App is installed on (variable
+# RELEASE_APP_CLIENT_ID, secret RELEASE_APP_PRIVATE_KEY) and updates those that
+# carry a renovate.json, which extends this repository's default.json. A
+# repository without one is skipped: no onboarding pull request. Onboarding a
+# repository = install the App on it and add its renovate.json; it needs no
+# workflow of its own.
+#
+# Pull requests opened with the App's token run CI, unlike those of
+# GITHUB_TOKEN. Commits go through the GitHub API (platformCommit), so they are
+# signed by GitHub and authored by the App.
+#
+# Every day: the Monday run, inside the Monday-morning schedule of the preset,
+# opens the week's pull requests; the others keep them and each Dependency
+# Dashboard issue current. A manual run is a dry run unless its box is
+# unticked. Renovate runs in a container: the runner needs a Docker daemon.
+on:
+  schedule:
+    # 01:17 UTC: inside the Monday-morning schedule (before 6am Paris time),
+    # with room for GitHub to start a scheduled run late.
+    - cron: '17 1 * * *'
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: Look the updates up and log them, change nothing on GitHub
+        type: boolean
+        default: true
+      log-level:
+        description: Renovate log level
+        type: choice
+        options: [info, debug, warn]
+        default: info
+
+# Deny-all default: the job token is not used, Renovate works with the App's.
+permissions: {}
+
+# One run at a time: a manual run waits for the scheduled one.
+concurrency:
+  group: renovate
+  cancel-in-progress: false
+
+jobs:
+  renovate:
+    name: Renovate
+    # The CI_RUNNER variable (JSON labels, e.g. '"ubicloud-standard-2"');
+    # GitHub-hosted when unset.
+    runs-on: ${{ fromJson(vars.CI_RUNNER || '"ubuntu-26.04"') }}
+    timeout-minutes: 90
+    permissions: {}
+    steps:
+      # No `repositories:`: the token covers every repository the App is
+      # installed on for this owner. The App must hold these permissions, or
+      # the token is refused here. workflows: write lets Renovate update the
+      # pinned actions inside .github/workflows/.
+      - name: Mint the App token
+        id: app
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          permission-contents: write        # branches and commits of the update PRs
+          permission-pull-requests: write   # open, update and close them
+          permission-issues: write          # the Dependency Dashboard issues
+          permission-workflows: write       # bump the actions pinned in .github/workflows/
+          permission-statuses: write        # the renovate/stability-days status (minimumReleaseAge)
+
+      # No checkout: Renovate clones each repository itself, with the App's token.
+      - name: Renovate
+        uses: renovatebot/github-action@acdd6bda8b035c99ce59d5675816af2aa65a1774 # v46.3.14
+        env:
+          RENOVATE_AUTODISCOVER: 'true'
+          RENOVATE_AUTODISCOVER_FILTER: ${{ github.repository_owner }}/*
+          RENOVATE_PLATFORM_COMMIT: enabled
+          # Only repositories with a config file: never an onboarding pull request.
+          RENOVATE_ONBOARDING: 'false'
+          RENOVATE_REQUIRE_CONFIG: required
+          # Empty when not a dry run (always on a schedule): Renovate then writes.
+          RENOVATE_DRY_RUN: ${{ inputs.dry-run && 'lookup' || '' }}
+          LOG_LEVEL: ${{ inputs.log-level || 'info' }}
+        with:
+          token: ${{ steps.app.outputs.token }}
+          # The image tag, pinned: the action's default is a moving major tag.
+          # Read from Renovate's GitHub releases, which carry a date: a ghcr.io
+          # image has none, so minimumReleaseAge would hold its bump forever.
+          # renovate: datasource=github-releases depName=renovatebot/renovate
+          renovate-version: 44.257.9

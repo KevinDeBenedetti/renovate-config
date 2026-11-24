@@ -15,7 +15,7 @@
 
 ## Prerequisites
 
-- Renovate on the repository: the [Mend Renovate app](https://github.com/apps/renovate) or a [self-hosted run](https://docs.renovatebot.com/getting-started/running/)
+- Renovate on the repository: the [central run](#central-run) of this repository for KevinDeBenedetti repositories, otherwise the [Mend Renovate app](https://github.com/apps/renovate) or a [self-hosted run](https://docs.renovatebot.com/getting-started/running/)
 
 ## Usage
 
@@ -54,9 +54,25 @@ Check the config before a push:
 npx --yes --package renovate -- renovate-config-validator --strict
 ```
 
+## Central run
+
+[`.github/workflows/renovate.yml`](.github/workflows/renovate.yml) runs Renovate once a day for every KevinDeBenedetti repository. It autodiscovers the repositories the release GitHub App is installed on and updates those that have a `renovate.json`. The others are skipped, with no onboarding pull request. The Monday run opens the week's pull requests. The runs on the other days keep them and each Dependency Dashboard current. A manual run is a dry run unless its box is unticked.
+
+Set up, once, in this repository:
+
+1. A GitHub App with **Contents**, **Issues**, **Pull requests**, **Workflows** and **Commit statuses** set to *Read and write*.
+2. Its client ID as the variable `RELEASE_APP_CLIENT_ID` and its private key as the secret `RELEASE_APP_PRIVATE_KEY`. The optional `CI_RUNNER` variable picks the runner as JSON labels (`'"ubicloud-standard-2"'`). It must be Linux with a Docker daemon.
+
+Onboard a repository:
+
+1. Install the App on it.
+2. Add the `renovate.json` of [Usage](#usage) to its default branch.
+3. Give it no Renovate workflow of its own: two runs on one repository race for the same branches.
+4. Turn off Dependabot version and security updates (no `.github/dependabot.yml`, *Settings → Code security → Dependabot security updates* off), so that only Renovate opens dependency pull requests. Keep *Dependabot alerts* on: Renovate reads them to open its security pull requests.
+
 ## Caveats
 
-- **Schedule.** Pull requests open only inside the window, security fixes aside: a self-hosted run has to start there, or it opens no update until the next Monday. The [Mend Renovate app](https://docs.renovatebot.com/mend-hosted/job-scheduling/) picks its own times: every 4 hours at best, daily until a Renovate pull request is merged, so a 6-hour window can pass with no run. With the app, widen the window to the whole day, lock file maintenance included: `"schedule": ["* * * * 1"]` and `"lockFileMaintenance": { "schedule": ["* * * * 1"] }`.
+- **Schedule.** Pull requests open only inside the window, security fixes aside: a self-hosted run, the central one included, has to start there, or it opens no update until the next Monday. The [Mend Renovate app](https://docs.renovatebot.com/mend-hosted/job-scheduling/) picks its own times: every 4 hours at best, daily until a Renovate pull request is merged, so a 6-hour window can pass with no run. With the app, widen the window to the whole day, lock file maintenance included: `"schedule": ["* * * * 1"]` and `"lockFileMaintenance": { "schedule": ["* * * * 1"] }`.
 - **Cargo.** `config:best-practices` pins dev-dependencies, Cargo's too: `serde_json = "1"` would become `=1.0.x` while every other crate keeps its range. A Rust repository adds a rule with `"matchManagers": ["cargo"]` and `"rangeStrategy": "update-lockfile"` to move `Cargo.lock` only.
 - **Release dates.** The soak needs a release timestamp, and Docker images get one from Docker Hub only: an image from another registry never passes it unless a rule sets `minimumReleaseAgeBehaviour` to `timestamp-optional`, as above.
 - **prek.** A `rev` is updated only with the comment on the line above it: `# renovate: datasource=github-tags depName=<owner>/<repo>`, any datasource, with optional `packageName=`, `versioning=` and `extractVersion=`. The `rev` is a tag (`rev = "v1.2.3"`) or a commit frozen to its tag (`rev = "<sha>"  # frozen: v1.2.3`, as `prek update --freeze` writes it), whose commit and comment move together.
@@ -64,7 +80,7 @@ npx --yes --package renovate -- renovate-config-validator --strict
 
 ## Git hooks
 
-The [prek](https://prek.j178.dev) hooks of `prek.toml` check file hygiene and the workflow, and validate `default.json` with `renovate-config-validator --strict --no-global`. CI runs them on every pull request and every push to `main`.
+The [prek](https://prek.j178.dev) hooks of `prek.toml` check file hygiene and the workflows, and validate `default.json` and `renovate.json` with `renovate-config-validator --strict --no-global`. CI runs them on every pull request and every push to `main`.
 
 ```sh
 prek install           # once after cloning

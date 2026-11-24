@@ -1,0 +1,15 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "This repository's own updates (the actions and the Renovate image of .github/workflows/renovate.yml, the prek hooks), on top of its own preset.",
+  "extends": ["github>KevinDeBenedetti/renovate-config"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "The Renovate image tag of .github/workflows/renovate.yml, under its `# renovate:` comment: the github-actions manager only reads `uses:` refs.",
+      "managerFilePatterns": ["/^\\.github/workflows/.+\\.ya?ml$/"],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\n\\s+renovate-version: (?<currentValue>v?\\d\\S*)"
+      ]
+    }
+  ]
+}

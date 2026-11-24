@@ -28,13 +28,14 @@ hooks = [
   { id = "actionlint" },
 ]
 
-# The hook's own pattern only matches renovate.json and its variants. A preset
-# is repository config, not self-hosted global config (--no-global), and an
-# option that needs a migration fails the check (--strict).
+# The hook's own pattern only matches renovate.json and its variants: here it
+# checks default.json too. Both are repository config, not self-hosted global
+# config (--no-global), and an option that needs a migration fails the check
+# (--strict).
 [[repos]]
 repo = "https://github.com/renovatebot/pre-commit-hooks"
 # renovate: datasource=github-tags depName=renovatebot/pre-commit-hooks
 rev = "44.257.5"
 hooks = [
-  { id = "renovate-config-validator", args = ["--strict", "--no-global"], files = "^default\\.json$" },
+  { id = "renovate-config-validator", args = ["--strict", "--no-global"], files = "^(default|renovate)\\.json$" },
 ]
