@@ -10,6 +10,7 @@
 - One update window a week, Monday before 6am (Europe/Paris), with no hourly cap on pull requests
 - A 3-day [minimum release age](https://docs.renovatebot.com/key-concepts/minimum-release-age/) on every update, whatever the ecosystem, with security fixes (GitHub and OSV advisories) exempt from it and from the schedule
 - prek hook revs kept current, from a `# renovate:` comment above each `rev` in `prek.toml`
+- Minors, patches and digests grouped in one weekly pull request (`renovate/all-minor-patch`), security fixes aside
 - Majors kept apart: one pull request per major, and majors of data-owning images (`postgres`, `redis`, `valkey`, `mariadb`, `mysql`, `mongo`, `qdrant`, `seaweedfs`, `minio`) held for approval on the Dependency Dashboard
 - Labels by kind (`dependencies`, `security`, `major`, `github-actions`, `prek`, `data-migration`) and the `ci` commit type for GitHub Actions bumps
 
@@ -58,6 +59,7 @@ npx --yes --package renovate -- renovate-config-validator --strict
 
 - **Schedule.** Pull requests open only inside the window, security fixes aside: a self-hosted run has to start there, or it opens no update until the next Monday. The [Mend Renovate app](https://docs.renovatebot.com/mend-hosted/job-scheduling/) picks its own times: every 4 hours at best, daily until a Renovate pull request is merged, so a 6-hour window can pass with no run. With the app, widen the window to the whole day, lock file maintenance included: `"schedule": ["* * * * 1"]` and `"lockFileMaintenance": { "schedule": ["* * * * 1"] }`.
 - **Cargo.** `config:best-practices` pins dev-dependencies, Cargo's too: `serde_json = "1"` would become `=1.0.x` while every other crate keeps its range. A Rust repository adds a rule with `"matchManagers": ["cargo"]` and `"rangeStrategy": "update-lockfile"` to move `Cargo.lock` only.
+- **Grouping.** Minors, patches and digests share one pull request, and one failing update holds them all: exclude it from the group on the Dependency Dashboard. The repository's own `groupName` rules keep their own pull request; a package that must stay alone, a checksum pinned next to its version say, gets a rule with `"groupName": null`.
 - **Release dates.** The soak needs a release timestamp, and Docker images get one from Docker Hub only: an image from another registry never passes it unless a rule sets `minimumReleaseAgeBehaviour` to `timestamp-optional`, as above.
 - **prek.** A `rev` is updated only with the comment on the line above it: `# renovate: datasource=github-tags depName=<owner>/<repo>`, any datasource, with optional `packageName=`, `versioning=` and `extractVersion=`. The `rev` is a tag (`rev = "v1.2.3"`) or a commit frozen to its tag (`rev = "<sha>"  # frozen: v1.2.3`, as `prek update --freeze` writes it), whose commit and comment move together.
 - **Examples.** `config:best-practices` ignores `**/examples/**`: set your own `ignorePaths` to update the pins there.

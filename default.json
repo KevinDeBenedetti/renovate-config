@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Shared base preset: Renovate's best practices, one Monday-morning window in Europe/Paris, a 3-day soak on every release, prek.toml hook revs, labels by kind, and majors of data-owning images held for approval. Extend it with `github>KevinDeBenedetti/renovate-config` and keep only the repository's own rules next to it.",
+  "description": "Shared base preset: Renovate's best practices, one Monday-morning window in Europe/Paris, a 3-day soak on every release, minors, patches and digests in one weekly pull request, prek.toml hook revs, labels by kind, and majors of data-owning images held for approval. Extend it with `github>KevinDeBenedetti/renovate-config` and keep only the repository's own rules next to it.",
   "extends": [
     "config:best-practices",
     ":separateMultipleMajorReleases",
@@ -86,6 +86,13 @@
       "prBodyNotes": [
         "⚠️ This image owns data. A new major may refuse the files the current one wrote: read its upgrade notes, plan the migration (dump and restore, or the project's own upgrade path) and take a backup first. Merging alone can take the database down."
       ]
+    },
+    {
+      "description": "Minors, patches and digests in one weekly pull request (branch renovate/all-minor-patch), instead of one per package each running the full CI; majors stay one each (:separateMultipleMajorReleases). An explicit rule rather than group:allNonMajor, which leaves digest and pinDigest out, and config:best-practices pins every Docker image and GitHub Action by digest. Last, after the soak rules: grouping changes no minimumReleaseAge, so each update still waits its 3 days. A repository's own groupName rules come after the preset's and keep their own pull request; a package that must stay alone (a checksum pinned next to it, say) sets `\"groupName\": null`. One failing update holds the whole group: exclude it from the Dependency Dashboard.",
+      "matchPackageNames": ["*"],
+      "matchUpdateTypes": ["minor", "patch", "digest", "pinDigest"],
+      "groupName": "all non-major dependencies",
+      "groupSlug": "all-minor-patch"
     }
   ]
 }
