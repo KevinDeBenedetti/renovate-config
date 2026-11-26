@@ -43,7 +43,7 @@
       "enabled": false
     },
     {
-      "description": "GitHub Actions bumps are CI changes: `ci(deps)` rather than `chore(deps)`, so they stay out of the release notes.",
+      "description": "GitHub Actions bumps are CI changes: `ci(deps)` rather than `chore(deps)`, so they stay out of the release notes. Only majors keep it: minors, patches and digests join the non-major group below, which sets its own type.",
       "matchManagers": ["github-actions"],
       "semanticCommitType": "ci",
       "addLabels": ["github-actions"]
@@ -88,11 +88,12 @@
       ]
     },
     {
-      "description": "Minors, patches and digests in one weekly pull request (branch renovate/all-minor-patch), instead of one per package each running the full CI; majors stay one each (:separateMultipleMajorReleases). An explicit rule rather than group:allNonMajor, which leaves digest and pinDigest out, and config:best-practices pins every Docker image and GitHub Action by digest. Last, after the soak rules: grouping changes no minimumReleaseAge, so each update still waits its 3 days. A repository's own groupName rules come after the preset's and keep their own pull request; a package that must stay alone (a checksum pinned next to it, say) sets `\"groupName\": null`. One failing update holds the whole group: exclude it from the Dependency Dashboard.",
+      "description": "Minors, patches and digests in one weekly pull request (branch renovate/all-minor-patch), instead of one per package each running the full CI; majors stay one each (:separateMultipleMajorReleases). An explicit rule rather than group:allNonMajor, which leaves digest and pinDigest out, and config:best-practices pins every Docker image and GitHub Action by digest. Last, after the soak rules: grouping changes no minimumReleaseAge, so each update still waits its 3 days. A repository's own groupName rules come after the preset's and keep their own pull request; a package that must stay alone (a checksum pinned next to it, say) sets `\"groupName\": null`. One failing update holds the whole group: exclude it from the Dependency Dashboard. Always `chore(deps)`: the group mixes ecosystems, so the GitHub Actions rule's `ci` would otherwise hide runtime bumps from the release notes whenever an action came first.",
       "matchPackageNames": ["*"],
       "matchUpdateTypes": ["minor", "patch", "digest", "pinDigest"],
       "groupName": "all non-major dependencies",
-      "groupSlug": "all-minor-patch"
+      "groupSlug": "all-minor-patch",
+      "semanticCommitType": "chore"
     }
   ]
 }

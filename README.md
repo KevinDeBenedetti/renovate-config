@@ -12,7 +12,7 @@
 - prek hook revs kept current, from a `# renovate:` comment above each `rev` in `prek.toml`
 - Minors, patches and digests grouped in one weekly pull request (`renovate/all-minor-patch`), security fixes aside
 - Majors kept apart: one pull request per major, and majors of data-owning images (`postgres`, `redis`, `valkey`, `mariadb`, `mysql`, `mongo`, `qdrant`, `seaweedfs`, `minio`) held for approval on the Dependency Dashboard
-- Labels by kind (`dependencies`, `security`, `major`, `github-actions`, `prek`, `data-migration`) and the `ci` commit type for GitHub Actions bumps
+- Labels by kind (`dependencies`, `security`, `major`, `github-actions`, `prek`, `data-migration`) and the `ci` commit type for GitHub Actions majors (the weekly group is always `chore(deps)`)
 
 ## Prerequisites
 
