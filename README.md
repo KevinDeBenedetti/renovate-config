@@ -64,7 +64,7 @@ npx --yes --package renovate -- renovate-config-validator --strict
 
 ## Git hooks
 
-The [prek](https://prek.j178.dev) hooks of `prek.toml` check file hygiene and the workflow, and validate `default.json` with `renovate-config-validator --strict --no-global`. CI runs them on every pull request and every push to `main`.
+The [prek](https://prek.j178.dev) hooks of `prek.toml` check file hygiene and the workflows, and validate `default.json` and `renovate.json` with `renovate-config-validator --strict --no-global`. CI runs them on every pull request and every push to `main`.
 
 ```sh
 prek install           # once after cloning

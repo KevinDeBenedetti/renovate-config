@@ -1,0 +1,5 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "description": "This repository's own updates (prek hook revs), with the preset it publishes. Renovate reads that preset from main, so a change to default.json applies here only once merged.",
+  "extends": ["github>KevinDeBenedetti/renovate-config"]
+}
