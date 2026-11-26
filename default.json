@@ -1,9 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "description": "Shared base preset: Renovate's best practices, one Monday-morning window in Europe/Paris, a 3-day soak on every release, minors, patches and digests in one weekly pull request, prek.toml hook revs, labels by kind, and majors of data-owning images held for approval. Extend it with `github>KevinDeBenedetti/renovate-config` and keep only the repository's own rules next to it.",
+  "description": "Shared base preset: Renovate's best practices, one Monday-morning window in Europe/Paris, a 3-day soak on every release, every update, majors included, in one weekly pull request, prek.toml hook revs, labels by kind, and majors of data-owning images held for approval. Extend it with `github>KevinDeBenedetti/renovate-config` and keep only the repository's own rules next to it.",
   "extends": [
     "config:best-practices",
-    ":separateMultipleMajorReleases",
     ":timezone(Europe/Paris)"
   ],
   "schedule": ["* 0-5 * * 1"],
@@ -43,7 +42,7 @@
       "enabled": false
     },
     {
-      "description": "GitHub Actions bumps are CI changes: `ci(deps)` rather than `chore(deps)`, so they stay out of the release notes. Only majors keep it: minors, patches and digests join the non-major group below, which sets its own type.",
+      "description": "GitHub Actions bumps are CI changes: `ci(deps)` rather than `chore(deps)`, so they stay out of the release notes. The weekly group below sets its own type; a repository whose own groupName rule takes an action out of it keeps `ci`.",
       "matchManagers": ["github-actions"],
       "semanticCommitType": "ci",
       "addLabels": ["github-actions"]
@@ -88,11 +87,12 @@
       ]
     },
     {
-      "description": "Minors, patches and digests in one weekly pull request (branch renovate/all-minor-patch), instead of one per package each running the full CI; majors stay one each (:separateMultipleMajorReleases). An explicit rule rather than group:allNonMajor, which leaves digest and pinDigest out, and config:best-practices pins every Docker image and GitHub Action by digest. Last, after the soak rules: grouping changes no minimumReleaseAge, so each update still waits its 3 days. A repository's own groupName rules come after the preset's and keep their own pull request; a package that must stay alone (a checksum pinned next to it, say) sets `\"groupName\": null`. One failing update holds the whole group: exclude it from the Dependency Dashboard. Always `chore(deps)`: the group mixes ecosystems, so the GitHub Actions rule's `ci` would otherwise hide runtime bumps from the release notes whenever an action came first.",
+      "description": "Every update in one weekly pull request (branch renovate/all), majors included, instead of one per package each running the full CI. separateMajorMinor and separateMultipleMajor off, or Renovate would still split majors out to renovate/major-all. Last, after the soak rules: grouping changes no minimumReleaseAge, so each update still waits its 3 days, and majors held for approval on the Dependency Dashboard join the group once approved. Security fixes keep their own pull request, opened at once (Renovate's vulnerabilityAlerts defaults). A repository's own groupName rules come after the preset's and keep their own pull request; a package that must stay alone (a checksum pinned next to it, say) sets `\"groupName\": null`. One failing update holds the whole group: exclude it from the Dependency Dashboard. Always `chore(deps)`: the group mixes ecosystems, so the GitHub Actions rule's `ci` would otherwise hide runtime bumps from the release notes whenever an action came first.",
       "matchPackageNames": ["*"],
-      "matchUpdateTypes": ["minor", "patch", "digest", "pinDigest"],
-      "groupName": "all non-major dependencies",
-      "groupSlug": "all-minor-patch",
+      "groupName": "all dependencies",
+      "groupSlug": "all",
+      "separateMajorMinor": false,
+      "separateMultipleMajor": false,
       "semanticCommitType": "chore"
     }
   ]
